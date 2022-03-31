@@ -25,7 +25,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         self.model = model
         self.crit = crit
         self.optimizer = optimizer
-        self.lr_scehduler = lr_scheduler
+        self.lr_scheduler = lr_scheduler
         self.config = config
 
         super().__init__(func)
@@ -82,7 +82,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 engine.config.max_grad_norm,
             )
             # Take a step of gradient descent.
-            if engine.config.gpu_id >= 0 and not engine.config.of_autocast:
+            if engine.config.gpu_id >= 0 and not engine.config.off_autocast:
                 # Use scaler instead of engine.optimizer.step() if using GPU.
                 engine.scaler.step(engine.optimizer)
                 engine.scaler.update()
@@ -105,12 +105,12 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
         with torch.no_grad():
             device = next(engine.model.parameters()).device
-            x, y = mini_batch['src'], mini_batch['tgt'][:, 1:]
+            x, y = mini_batch['src'].to(device), mini_batch['tgt'][:, 1:].to(device)
             # |x| = (batch_size, length)
             # |y| = (batch_size, length)
 
             with autocast(not engine.config.off_autocast):
-                y_hat = engine.model(x, mini_batch['tgt'][0][:-1])
+                y_hat = engine.model(x, mini_batch['tgt'][:, :-1])
                 # |y_hat| = (batch_size, n_classes)
                 loss = engine.crit(
                     y_hat.contiguous().view(-1, y_hat.size(-1)),
@@ -177,9 +177,9 @@ class MaximumLikelihoodEstimationEngine(Engine):
 
                 print('Validation - loss={:.4e} ppl={:.2f} best_loss={:.4e} best_ppl={:.2f}'.format(
                     avg_loss,
-                    np.exp(avg_loss,
+                    np.exp(avg_loss),
                     engine.best_loss,
-                    np.exp(engine.best_loss))
+                    np.exp(engine.best_loss),
                 ))
 
     @staticmethod

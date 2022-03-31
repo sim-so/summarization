@@ -319,7 +319,7 @@ class Transformer(nn.Module):
 
     @torch.no_grad()
     def _generate_mask(self, x):
-        mask = torch.tensor(torch.eq(x, 0), dtype=torch.float32)
+        mask = torch.tensor(torch.eq(x, 0), dtype=torch.bool)
         # |mask| = (batch_size, max_length)
 
         return mask
@@ -349,7 +349,7 @@ class Transformer(nn.Module):
             future_mask = future_mask.unsqueeze(0).expand(y.size(0), *future_mask.size())
             # |fwd_mask| = (batch_size, m, m)
 
-        h = self.emb_dropout(self._position_encoding(self.emb_dec(y)))
+        h = self.emb_dropout(self._position_encoding(self.emb_dec(y.to(self.emb_dec.weight.device))))
         h, _, _, _, _ = self.decoder(h, z, mask_dec, None, future_mask)
         # |h| = (batch_size, m, hidden_size)
 

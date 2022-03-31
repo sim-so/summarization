@@ -43,12 +43,12 @@ def define_argparser(is_continue=False):
     )
     p.add_argument(
         '--valid_size',
-        required=not is_continue,
         type=int,
-        help='Validation set file name except the extention. (ex: valid.en --> valid)'
+        default=200,
+        help='Size of Validation data. It should be smaller than size of train data. Defaults=%(default)s'
     )
     p.add_argument(
-        '--gpu-id',
+        '--gpu_id',
         type=int,
         default=-1, 
         help='GPU ID to train. Currently, GPU parallel is not supported. -1 for CPU. Default=%(default)s'
