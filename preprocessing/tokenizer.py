@@ -1,7 +1,7 @@
 import numpy as np
 
 from konlpy.tag import Mecab
-import tqdm
+from tqdm import tqdm
 
 
 class Mecab_Tokenizer():
@@ -14,7 +14,7 @@ class Mecab_Tokenizer():
         self.word_count = {}
         self.max_vocab_size = max_vocab_size
 
-        self.font_blank_tag = [
+        self.front_blank_tag = [
             '', 'EC', 'EC+JKO', 'EF', 'EP+EC', 'EP+EP+EC', 'EP+ETM', 'EP+ETN+JKO', 'ETM', 'ETN', 'ETN+JKO', 'ETN+JX', 'IC', 'JC', 'JKB', 'JKB+JX', 'JKO',
             'JKQ', 'JKS', 'JX', 'MAG', 'MAG+JX', 'MAG+XSV+EP+EC', 'MAJ','MM', 'MM+EC', 'NNB', 'NNB+JKB', 'NNB+JKO', 'NNB+VCP+EC', 'NNBC', 'NNG', 'NNG+JX+JKO',
             'NNG+VCP+EC', 'NNP', 'NNP+JX', 'NP', 'NP+JKO', 'NP+JKS', 'NP+JX', 'NP+VCP+EC', 'NR', 'SC', 'SF', 'SL', 'SN', 'SSC', 'SSO', 'SY', 'UNKNOWN',
@@ -40,13 +40,13 @@ class Mecab_Tokenizer():
                 temp.append('_'.join(t))
             if self.mode == 'dec':
                 temp.append('eos_')
-            new_sentence.append(''.join(temp))
+            new_sentence.append(' '.join(temp))
 
         return new_sentence
 
     def fit(self, sentence_list):
         for sentence in tqdm(sentence_list):
-            for word in sentence.split(''):
+            for word in sentence.split(' '):
                 try:
                     self.word_count[word] += 1
                 except:
@@ -72,7 +72,7 @@ class Mecab_Tokenizer():
         tokens = []
         for sentence in tqdm(sentence_list):
             token = [0]*self.max_length
-            for i, w in enumerate(sentence.split('')):
+            for i, w in enumerate(sentence.split(' ')):
                 if i == self.max_length:
                     break
                 try:
@@ -93,10 +93,10 @@ class Mecab_Tokenizer():
                         break
                     elif i != 0:
                         sentence.append(self.idx2txt[i].split('_')[0])
-                        if self.idx2txt[i].split('_')[1] in self.font_blank_tag:
+                        if self.idx2txt[i].split('_')[1] in self.front_blank_tag:
                             try:
                                 if self.idx2txt[token[j+1]].split('_')[1] in self.back_blank_tag:
-                                    sentence.append('')
+                                    sentence.append(' ')
                             except:
                                 pass
         sentence = "".join(sentence)
