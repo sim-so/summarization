@@ -6,6 +6,7 @@ from operator import itemgetter
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from data_loader import CustomDataset, Vocab
 import data_loader as data_loader
@@ -118,7 +119,7 @@ def get_model(input_size, output_size, train_config):
 
 
 if __name__ == '__main__':
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+#    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
     config = define_argparser()
 
     seed_everything()
@@ -154,13 +155,20 @@ if __name__ == '__main__':
     outputs = []
     with torch.no_grad():
         # Get sentence from standard input.
-        for lines in loader:
+        for i, lines in tqdm(enumerate(loader)):
             x = lines['src'].to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
-        # |lines| = (batch_size, length)
+            # |lines| = (batch_size, length)
 
-        y_hats, indice = model.search(x)
-        # |y_hats| = (batch_size, length, output_size)
-        # |indice| = (batch_size, length)
+            y_hats, indice = model.search(x)
+            # |y_hats| = (batch_size, length, output_size)
+            # |indice| = (batch_size, length)
 
-        output = to_text(indice, vocab.tgt_tokenizer)
-        sys.stdout.write('\n'.join(output) + '\n')
+            # # outputs = to_text(indice, vocab.tgt_tokenizer)
+            # outputs = vocab.tgt_tokenizer.convert(y_hats)
+            # for output in outputs:
+            #     sys.stdout.write('\n'.join(output) + '\n')
+
+            output = vocab.tgt_tokenizer.convert(y_hats)
+            outputs.append(output)
+
+    pd.DataFrame({'output': outputs}).to_csv(config.output_fn, index=False)
