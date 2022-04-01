@@ -34,11 +34,11 @@ class CustomDataset(Dataset):
 
 
 class Vocab():
-    def __init__(self, src_text=None, tgt_text=None, encoder_len=500, decoder_len=50, max_vocab_size=50000):
+    def __init__(self, src_text=None, tgt_text=None, encoder_len=500, decoder_len=50, max_vocab_size=20000):
         self.src_tokenizer = Mecab_Tokenizer(encoder_len, mode='enc', max_vocab_size=max_vocab_size)
         self.tgt_tokenizer = Mecab_Tokenizer(decoder_len, mode='dec', max_vocab_size=max_vocab_size)
 
-        if src_text and tgt_text:
+        if src_text is not None and tgt_text is not None:
             self.src_tokenizer.fit(src_text)
             self.tgt_tokenizer.fit(tgt_text)
   

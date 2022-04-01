@@ -127,7 +127,7 @@ if __name__ == '__main__':
     vocab.set_vocab(src_vocab, tgt_vocab)
 
     # Load text data to summarize.
-    data = pd.read_csv(config.file_fn, sep="\t", )
+    data = pd.read_csv(config.text_fn, sep="\t", )
     tokens = vocab.src_tokenizer.txt2token(data['total'])
 
     loader = DataLoader(CustomDataset(tokens, mode='test'), batch_size=config.batch_size, num_workers=1, shuffle=False)
@@ -143,10 +143,10 @@ if __name__ == '__main__':
     with torch.no_grad():
         # Get sentence from standard input.
         for lines in iter(loader):
-            lines.to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
+            x = lines['src'].to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
         # |lines| = (batch_size, length)
 
-            y_hats, indice = model.search(lines)
+            y_hats, indice = model.search(x)
         # |y_hats| = (batch_size, length, output_size)
         # |indice| = (batch_size, length)
 
