@@ -357,3 +357,82 @@ class Transformer(nn.Module):
         # |y_hat| = (batch_size, m, output_size)
 
         return y_hat
+
+    # For inference.
+    def search(self, x, is_greedy=True, max_length=255):
+        # |x[0]| = (batch_size, n)
+        batch_size = x[0].size(0)
+
+        mask = self._generate_mask(x[0], x[1])
+        # |mask| = (batch_size, n)
+        x = x[0]
+
+        mask_enc = mask.unsqueeze(1).expand(mask.size(0), x.size(1), mask.size(-1))
+        mask_dec = mask.unsqueeze(1)
+        # |mask_enc| = (batch_size, n, n)
+        # |mask_dec| = (batch_size, 1, n)
+
+        z = self.emb_dropout(self._position_encoding(self.emb_enc(x)))
+        z, _ =self.encoder(z, mask_enc)
+        # |z| = (batch_size, n, hidden_size)
+
+        # Fill a vector, which has 'batch_size' dimension, with BOS value.
+        y_t_1 = x.new(batch_size, 1).zero_() + data_loader.BOS
+        # |y_t_1| = (batch_size, 1)
+        is_decoding = x.new_ones(batch_size, 1).bool()
+
+        prevs = [None for _ in range(len(self.decoder._modules) + 1)]
+        y_hats, indice = [], []
+        # Repeat a loop while sum of 'is_decoding' flag is bigger than 0,
+        # or current time-step is smaller than maximum length.
+        while is_decoding.sum() > 0 and len(indice) < max_length:
+            # Unlike training procedure,
+            # take the last time-step's output during the inference.
+            h_t = self.emb_dropout(
+                self._position_encoding(self.emb_dec(y_t_1), init_pos=len(indice))
+            )
+            # |h_t| = (batch_size, 1, hidden_size)
+            if prevs[0] is None:
+                prevs[0] = h_t
+            else:
+                prevs[0] = torch.cat([prevs[0], h_t], dim=1)
+
+            for layer_index, block in enumerate(self.decoder._modules.values()):
+                prev = prevs[layer_index]
+                # |prev| = (batch_size, len(y_hats), hidden_size)
+
+                h_t, _, _, _, _ = block(h_t, z, mask_dec, prev, None)
+                # |h_t| = (batch_size, 1, hidden_size)
+
+                if prevs[layer_index + 1] is None:
+                    prevs[layer_index + 1] = h_t
+                else:
+                    prevs[layer_index + 1] = torch.cat([prevs[layer_index + 1], h_t], dim=1)
+                # |prev| = (batch_size, len(y_hats) + 1, hidden_size)
+
+            y_hat_t = self.generator(h_t)
+            # |y_hat_t| = (batch_size, 1, output_size)
+
+            y_hats += [y_hat_t]
+            if is_greedy:   # Argmax
+                y_t_1 = torch.topk(y_hat_t, 1, dim=-1)[1].squeeze(-1)
+            else:           # Random sampling
+                y_t_1 = torch.multinomial(y_hat_t.exp().view(x.size(0), -1), 1)
+            # Put PAD if the sample is done.
+            y_t_1 = y_t_1.masked_fill(
+                ~is_decoding,
+                data_loader.PAD,
+            )
+
+            # Update is_decoding flag.
+            is_decoding = is_decoding * torch.ne(y_t_1, data_loader.EOS)
+            # |y_t_1|       = (batch_size, 1)
+            # |is_decoding| = (batch_size, 1)
+            indice += [y_t_1]
+
+        y_hats = torch.cat(y_hats, dim=1)
+        indice = torch.cat(indice, dim=-1)
+        # |y_hats| = (batch_size, m, output_size)
+        # |indice| = (batch_size, m)
+
+        return y_hats, indice

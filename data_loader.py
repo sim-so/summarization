@@ -1,6 +1,6 @@
+from logging import raiseExceptions
 import torch
 from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
 
 from preprocessing.preprocessing import json_to_tsv
 from preprocessing.tokenizer import Mecab_Tokenizer
@@ -10,7 +10,7 @@ PAD, BOS, EOS = 1, 2, 3
 
 
 class CustomDataset(Dataset):
-    def __init__(self, src_tokens, tgt_tokens, mode='train'):
+    def __init__(self, src_tokens, tgt_tokens=None, mode='train'):
         self.mode = mode
         self.src = src_tokens
         if self.mode == 'train':
@@ -34,12 +34,17 @@ class CustomDataset(Dataset):
 
 
 class Vocab():
-    def __init__(self, src_text, tar_text, encoder_len=500, decoder_len=50, max_vocab_size=50000):
+    def __init__(self, src_text=None, tgt_text=None, encoder_len=500, decoder_len=50, max_vocab_size=50000):
         self.src_tokenizer = Mecab_Tokenizer(encoder_len, mode='enc', max_vocab_size=max_vocab_size)
         self.tgt_tokenizer = Mecab_Tokenizer(decoder_len, mode='dec', max_vocab_size=max_vocab_size)
 
-        self.src_tokenizer.fit(src_text)
-        self.tgt_tokenizer.fit(tar_text)
+        if src_text and tgt_text:
+            self.src_tokenizer.fit(src_text)
+            self.tgt_tokenizer.fit(tgt_text)
   
-        self.src_vocab = self.src_tokenizer.txt2idx
-        self.tgt_vocab = self.tgt_tokenizer.txt2idx
+            self.src_vocab = self.src_tokenizer.txt2idx
+            self.tgt_vocab = self.tgt_tokenizer.txt2idx
+    
+    def set_vocab(self, src_vocab, tgt_vocab):
+        self.src_vocab = src_vocab
+        self.tgt_vocab = tgt_vocab

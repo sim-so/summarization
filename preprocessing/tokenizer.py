@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 import numpy as np
 
 from konlpy.tag import Mecab
@@ -106,3 +107,11 @@ class Mecab_Tokenizer():
             sentence = sentence[3:-1]
 
         return sentence
+
+    def set_vocab(self, vocab):
+        if isinstance(vocab.keys()[0], int):
+            self.idx2txt = vocab
+            self.txt2idx = {vocab[i]:i for i in vocab}
+        elif isinstance(vocab.keys()[0], str):
+            self.txt2idx = vocab
+            self.idx2txt = {vocab[i]:i for i in vocab}
