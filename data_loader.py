@@ -46,5 +46,5 @@ class Vocab():
             self.tgt_vocab = self.tgt_tokenizer.txt2idx
     
     def set_vocab(self, src_vocab, tgt_vocab):
-        self.src_vocab = src_vocab
-        self.tgt_vocab = tgt_vocab
+        self.src_tokenizer.set_vocab(src_vocab)
+        self.tgt_tokenizer.set_vocab(tgt_vocab)

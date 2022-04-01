@@ -361,11 +361,10 @@ class Transformer(nn.Module):
     # For inference.
     def search(self, x, is_greedy=True, max_length=255):
         # |x[0]| = (batch_size, n)
-        batch_size = x[0].size(0)
+        batch_size = x.size(0)
 
-        mask = self._generate_mask(x[0], x[1])
+        mask = self._generate_mask(x)
         # |mask| = (batch_size, n)
-        x = x[0]
 
         mask_enc = mask.unsqueeze(1).expand(mask.size(0), x.size(1), mask.size(-1))
         mask_dec = mask.unsqueeze(1)

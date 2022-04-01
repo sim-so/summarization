@@ -302,7 +302,7 @@ def main(config, model_weight=None, opt_weight=None):
         train_loader=train_loader,
         valid_loader=valid_loader,
         src_vocab=train_vocab.src_vocab,
-        tgt_vocab=train_vocab.src_vocab,
+        tgt_vocab=train_vocab.tgt_vocab,
         n_epochs=config.n_epochs,
         lr_scheduler=lr_scheduler,
     )

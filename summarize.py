@@ -76,23 +76,12 @@ def define_argparser():
     return config
 
 
-def to_text(indiece, vocab):
+def to_text(indices, vocab):
     # This method converto index to word to show the summarization result.
     lines = []
 
-    for i in range(len(indice)):
-        line = []
-        for j in range(len(indice[i])):
-            index = indice[i][j]
-
-            if index == data_loader.EOS:
-                # line += ['<EOS>']
-                break
-            else:
-                line += [vocab.convert(index)]
-
-        line = ' '.join(line)
-        lines += [line]
+    for i in range(len(indices)):
+        line = vocab.convert(indices[i].tolist())
 
     return lines
 
@@ -141,10 +130,10 @@ if __name__ == '__main__':
     data = pd.read_csv(config.file_fn, sep="\t", )
     tokens = vocab.src_tokenizer.txt2token(data['total'])
 
-    loader = DataLoader(CustomDataset(tokens, mode='text'), batch_size=config.batch_size, num_workers=1, shuffle=False)
+    loader = DataLoader(CustomDataset(tokens, mode='test'), batch_size=config.batch_size, num_workers=1, shuffle=False)
 
     # Get model as trained.
-    input_size, output_size = len(vocab.src_vocab), len(vocab.tgt_vocab)
+    input_size, output_size = len(src_vocab), len(tgt_vocab)
     model = get_model(input_size, output_size, train_config)
 
     # Put models to device if is necessary.
@@ -157,9 +146,9 @@ if __name__ == '__main__':
             lines.to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
         # |lines| = (batch_size, length)
 
-        y_hats, indice = model.search(lines)
+            y_hats, indice = model.search(lines)
         # |y_hats| = (batch_size, length, output_size)
         # |indice| = (batch_size, length)
 
-        output = to_text(indice, vocab.tgt_tokenizer)
-        sys.stdout.write('\n'.join(output) + '\n')
+            output = to_text(indice, vocab.tgt_tokenizer)
+            sys.stdout.write('\n'.join(output) + '\n')
