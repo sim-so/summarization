@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${file}",
             "args": ["--model_fn", "/content/drive/MyDrive/Projects/lg-text-summarization/trained_models/transformer.bs-32.n_epochs-20.enc-500.dec.50.max-20000.adam.20.0.25-1.28.0.23-1.25.pth", 
-                "--text_fn", "/content/drive/MyDrive/Projects/lg-text-summarization/data/test.tsv", "--batch_size", "32", ">/content/drive/MyDrive/Projects/lg-text-summarization/inference/inference_01.csv"],
+                "--text_fn", "/content/drive/MyDrive/Projects/lg-text-summarization/data/valid.tsv", "--batch_size", "32", 
+                "--gpu_id", "0",
+                ">/content/drive/MyDrive/Projects/lg-text-summarization/inference/inference_03.csv"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

@@ -77,11 +77,12 @@ def define_argparser():
 
 
 def to_text(indices, vocab):
-    # This method converto index to word to show the summarization result.
+    # This method convert index to word to show the summarization result.
     lines = []
 
     for i in range(len(indices)):
         line = vocab.convert(indices[i].tolist())
+        lines.append(line)
 
     return lines
 
@@ -127,8 +128,8 @@ if __name__ == '__main__':
     vocab.set_vocab(src_vocab, tgt_vocab)
 
     # Load text data to summarize.
-    data = pd.read_csv(config.text_fn, sep="\t", )
-    src = vocab.src_tokenizer.morpheme(data)
+    data = pd.read_csv(config.text_fn, sep="\t", encoding='utf-8')
+    src = vocab.src_tokenizer.morpheme(data['total'])
     tokens = vocab.src_tokenizer.txt2token(src)
 
     loader = DataLoader(CustomDataset(tokens, mode='test'), batch_size=config.batch_size, num_workers=1, shuffle=False)
@@ -151,5 +152,6 @@ if __name__ == '__main__':
         # |y_hats| = (batch_size, length, output_size)
         # |indice| = (batch_size, length)
 
+            # to_text(indice, vocab.tgt_tokenizer)
             output = to_text(indice, vocab.tgt_tokenizer)
             sys.stdout.write('\n'.join(output) + '\n')
