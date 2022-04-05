@@ -105,6 +105,9 @@ class Mecab_Tokenizer():
             sentence = sentence[:-1]
         elif self.mode == 'dec':
             sentence = sentence[3:-1]
+        
+        if len(sentence) == 0:
+            sentence = " "
 
         return sentence
 
