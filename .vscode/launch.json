@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args": ["--model_fn", "./trained_models/transformer.bs-32.n_epochs-20.enc-500.dec-30.max_vocab-20000.adam.19.0.17-1.19.0.10-1.11.pth", "--text_fn", "./data/test.tsv", "--batch_size", "32", ">data/inference.tsv"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

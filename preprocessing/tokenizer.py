@@ -89,17 +89,17 @@ class Mecab_Tokenizer():
             if self.mode == 'enc':
                 if i != self.txt2idx['pad_']:
                     sentence.append(self.idx2txt[i].split('_')[0])
-                elif self.mode == 'dec':
-                    if i == self.txt2idx['eos_'] or i == self.txt2idx['pad_']:
-                        break
-                    elif i != 0:
-                        sentence.append(self.idx2txt[i].split('_')[0])
-                        if self.idx2txt[i].split('_')[1] in self.front_blank_tag:
-                            try:
-                                if self.idx2txt[token[j+1]].split('_')[1] in self.back_blank_tag:
-                                    sentence.append(' ')
-                            except:
-                                pass
+            elif self.mode == 'dec':
+                if i == self.txt2idx['eos_'] or i == self.txt2idx['pad_']:
+                    break
+                elif i != 0:
+                    sentence.append(self.idx2txt[i].split('_')[0])
+                    if self.idx2txt[i].split('_')[1] in self.front_blank_tag:
+                        try:
+                            if self.idx2txt[token[j+1]].split('_')[1] in self.back_blank_tag:
+                                sentence.append(' ')
+                        except:
+                            pass
         sentence = "".join(sentence)
         if self.mode == 'enc':
             sentence = sentence[:-1]

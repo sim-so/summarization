@@ -256,15 +256,20 @@ def main(config, model_weight=None, opt_weight=None):
     train = train_data.iloc[:-config.valid_size]
     valid = train_data.iloc[-config.valid_size:]
     
-    train_vocab = Vocab(train['total'], train['summary'], 
-                        encoder_len=config.encoder_len, decoder_len=config.decoder_len, 
-                        max_vocab_size=config.max_vocab_size)
+    train_vocab = Vocab(encoder_len=config.encoder_len, decoder_len=config.decoder_len, max_vocab_size=config.max_vocab_size)
 
-    train_src_tokens = train_vocab.src_tokenizer.txt2token(train['total'])
-    valid_src_tokens = train_vocab.src_tokenizer.txt2token(valid['total'])
+    train_src = train_vocab.src_tokenizer.morpheme(train['total'])
+    valid_src = train_vocab.src_tokenizer.morpheme(valid['total'])
+    train_tgt = train_vocab.tgt_tokenizer.morpheme(train['summary'])
+    valid_tgt = train_vocab.tgt_tokenizer.morpheme(valid['summary'])
 
-    train_tgt_tokens = train_vocab.tgt_tokenizer.txt2token(train['summary'])
-    valid_tgt_tokens = train_vocab.tgt_tokenizer.txt2token(valid['summary'])
+    train_vocab.src_tokenizer.fit(train_src)
+    train_vocab.tgt_tokenizer.fit(train_tgt)
+
+    train_src_tokens = train_vocab.src_tokenizer.txt2token(train_src)
+    valid_src_tokens = train_vocab.src_tokenizer.txt2token(valid_src)
+    train_tgt_tokens = train_vocab.tgt_tokenizer.txt2token(train_tgt)
+    valid_tgt_tokens = train_vocab.tgt_tokenizer.txt2token(valid_tgt)
 
     train_loader = DataLoader(CustomDataset(train_src_tokens, train_tgt_tokens), batch_size=config.batch_size, num_workers=1, shuffle=True)
     valid_loader = DataLoader(CustomDataset(valid_src_tokens, valid_tgt_tokens), batch_size=config.batch_size, num_workers=1, shuffle=False)

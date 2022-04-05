@@ -128,7 +128,8 @@ if __name__ == '__main__':
 
     # Load text data to summarize.
     data = pd.read_csv(config.text_fn, sep="\t", )
-    tokens = vocab.src_tokenizer.txt2token(data['total'])
+    src = vocab.src_tokenizer.morpheme(data)
+    tokens = vocab.src_tokenizer.txt2token(src)
 
     loader = DataLoader(CustomDataset(tokens, mode='test'), batch_size=config.batch_size, num_workers=1, shuffle=False)
 
