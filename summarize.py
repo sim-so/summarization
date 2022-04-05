@@ -146,11 +146,11 @@ if __name__ == '__main__':
         # Get sentence from standard input.
         for lines in iter(loader):
             x = lines['src'].to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
-        # |lines| = (batch_size, length)
+            # |lines| = (batch_size, length)
 
             y_hats, indice = model.search(x)
-        # |y_hats| = (batch_size, length, output_size)
-        # |indice| = (batch_size, length)
+            # |y_hats| = (batch_size, length, output_size)
+            # |indice| = (batch_size, length)
 
             # to_text(indice, vocab.tgt_tokenizer)
             output = to_text(indice, vocab.tgt_tokenizer)
