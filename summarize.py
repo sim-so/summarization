@@ -43,7 +43,7 @@ def define_argparser():
     p.add_argument(
         '--max_length',
         type=int,
-        default=255,
+        default=50,
         help='Maximum sequence length for inference. Default=%(default)s'
     )
     p.add_argument(

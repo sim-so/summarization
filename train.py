@@ -137,14 +137,14 @@ def define_argparser(is_continue=False):
     p.add_argument(
         '--lr',
         type=float,
-        default=1.,
+        default=1e-4,
         help='Initial learning rate. Default=%(default)s'
     )
 
     p.add_argument(
         '--lr_step',
         type=int,
-        default=1,
+        default=0,
         help='Number of epochs for each learning rate decay. Default=%(default)s'
     )
     p.add_argument(
@@ -169,11 +169,6 @@ def define_argparser(is_continue=False):
         '--use_radam',
         action='store_true',
         help='Use rectified Adam as optimizer. Other lr arguments should be changed.'
-    )
-    p.add_argument(
-        '--use_transformer',
-        action='store_true',
-        help='Set model architecture as Transformer'
     )
     p.add_argument(
         '--n_splits',
