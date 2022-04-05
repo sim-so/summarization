@@ -34,17 +34,29 @@ class CustomDataset(Dataset):
 
 
 class Vocab():
-    def __init__(self, src_text=None, tgt_text=None, encoder_len=500, decoder_len=50, max_vocab_size=20000):
+    def __init__(self, encoder_len=500, decoder_len=50, max_vocab_size=20000):
         self.src_tokenizer = Mecab_Tokenizer(encoder_len, mode='enc', max_vocab_size=max_vocab_size)
         self.tgt_tokenizer = Mecab_Tokenizer(decoder_len, mode='dec', max_vocab_size=max_vocab_size)
 
-        if src_text is not None and tgt_text is not None:
-            self.src_tokenizer.fit(src_text)
-            self.tgt_tokenizer.fit(tgt_text)
-  
-            self.src_vocab = self.src_tokenizer.txt2idx
-            self.tgt_vocab = self.tgt_tokenizer.txt2idx
+    def morpheme(self, src_text, tgt_text=None):
+        if tgt_text is not None:
+            return self.src_tokenizer.morpheme(src_text), self.tgt_tokenizer.morpheme(tgt_text)
+        else:
+            return self.src_tokenizer.morpheme(src_text)
+
+    def fit(self, src, tgt):
+        self.src_tokenizer.fit(src)
+        self.tgt_tokenizer.fit(tgt)
+
+        self.src_vocab = self.src_tokenizer.txt2idx
+        self.tgt_vocab = self.tgt_tokenizer.txt2idx
     
     def set_vocab(self, src_vocab, tgt_vocab):
         self.src_tokenizer.set_vocab(src_vocab)
         self.tgt_tokenizer.set_vocab(tgt_vocab)
+
+    def get_token(self, src, tgt=None):
+        if tgt is not None:
+            return self.src_tokenizer.txt2token(src), self.tgt_tokenizer.txt2token(tgt)
+        else:
+            return self.src_tokenizer.txt2token(src)

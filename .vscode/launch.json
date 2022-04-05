@@ -9,7 +9,8 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["--model_fn", "./trained_models/transformer.bs-32.n_epochs-20.enc-500.dec-30.max_vocab-20000.adam.19.0.17-1.19.0.10-1.11.pth", "--text_fn", "./data/test.tsv", "--batch_size", "32", ">data/inference.tsv"],
+            "args": ["--model_fn", "/content/drive/MyDrive/Projects/lg-text-summarization/trained_models/transformer.bs-32.n_epochs-20.enc-500.dec.50.max-20000.adam.20.0.25-1.28.0.23-1.25.pth", 
+                "--text_fn", "/content/drive/MyDrive/Projects/lg-text-summarization/data/test.tsv", "--batch_size", "32", ">/content/drive/MyDrive/Projects/lg-text-summarization/inference/inference_01.csv"],
             "console": "integratedTerminal",
             "justMyCode": true
         }
