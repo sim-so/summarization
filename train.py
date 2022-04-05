@@ -9,10 +9,10 @@ from torch import optim, seed
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from utils import seed_everything
-import data_loader as data_loader
-from data_loader import CustomDataset
-from data_loader import Vocab
+from utils.utils import seed_everything
+import utils.data_loader as data_loader
+from utils.data_loader import CustomDataset
+from utils.data_loader import Vocab
 
 from model.transformer import Transformer
 

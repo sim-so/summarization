@@ -5,13 +5,14 @@ from operator import itemgetter
 
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
 
-from data_loader import CustomDataset, Vocab
-import data_loader as data_loader
+from torch.utils.data import DataLoader
+from utils.data_loader import CustomDataset, Vocab
+import utils.data_loader as data_loader
 from model.transformer import Transformer
 
-from utils import seed_everything
+from utils.utils import seed_everything
+
 
 
 def define_argparser():
@@ -37,7 +38,7 @@ def define_argparser():
     p.add_argument(
         '--batch_size',
         type=int,
-        default=128,
+        default=32,
         help='Mini batch size for parallel inference. Default=%(default)s'    
     )
     p.add_argument(
@@ -131,7 +132,7 @@ if __name__ == '__main__':
 
     # Load text data to summarize.
     data = pd.read_csv(config.text_fn, sep="\t", encoding='utf-8')
-    src = vocab.src_tokenizer.morpheme(data['total'])
+    src = vocab.src_tokenizer.morpheme(data['context'])
     tokens = vocab.src_tokenizer.txt2token(src)
 
     loader = DataLoader(CustomDataset(tokens, mode='test'), batch_size=config.batch_size, num_workers=1, shuffle=False)
