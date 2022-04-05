@@ -258,8 +258,8 @@ def main(config, model_weight=None, opt_weight=None):
     
     train_vocab = Vocab(encoder_len=config.encoder_len, decoder_len=config.decoder_len, max_vocab_size=config.max_vocab_size)
 
-    train_src, train_tgt = train_vocab.morpheme(train['total'], train['summary'])
-    valid_src, valid_tgt = train_vocab.morpheme(valid['total'], valid['summary'])
+    train_src, train_tgt = train_vocab.morpheme(train['context'], train['summary'])
+    valid_src, valid_tgt = train_vocab.morpheme(valid['context'], valid['summary'])
 
     train_vocab.fit(train_src, train_tgt)
 

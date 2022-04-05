@@ -13,21 +13,6 @@ def define_argparser():
         required=True,
         help="Directory contains dataset."
     )
-    p.add_argument(
-        '--max_vocab_size',
-        type=int, default=20000,
-        help="Vocabulary size for tokenization."
-    )
-    p.add_argument(
-        '--encoder_len',
-        type=int, default=500,
-        help="Encoder length for tokenization."
-    )
-    p.add_argument(
-        '--decoder_len',
-        type=int, default=50,
-        help="Decoder length for tokenization."
-    )
 
     config = p.parse_args()
 
@@ -74,8 +59,8 @@ def main(config):
     test = json_to_tsv(dir, test_fn, False, 2000)
     print(f"|Dataset| Train: {len(train)} / Test: {len(test)}")
 
-    train.to_csv(dir+"train.tsv", sep='\t')
-    test.to_csv(dir+"test.tsv", sep='\t')
+    train.to_csv(dir+"train.tsv", sep='\t', index=False)
+    test.to_csv(dir+"test.tsv", sep='\t', index=False)
 
 
 if __name__ == '__main__':
