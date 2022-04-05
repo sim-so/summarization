@@ -82,6 +82,8 @@ def to_text(indices, vocab):
 
     for i in range(len(indices)):
         line = vocab.convert(indices[i].tolist())
+        if line == "":
+            line += "None"
         lines.append(line)
 
     return lines
