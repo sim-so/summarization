@@ -11,7 +11,7 @@ from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
 
-from utils.utils import get_grad_norm, get_parameter_norm
+from utils.utils import get_grad_norm, get_parameter_norm, accuracy_function
 
 
 VERBOSE_SILENT = 0
@@ -89,12 +89,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
             else:
                 engine.optimizer.step()
 
-        loss = float(loss / word_count)
-        ppl = np.exp(loss)
+        mask = torch.logical_not(torch.eq(y, 0)).to(device=loss.device)
+        loss = mask * loss
+        accuracy = accuracy_function(y, y_hat)
 
         return {
-            'loss' : loss,
-            'ppl' : ppl,
+            'loss' : torch.sum(loss) / torch.sum(mask),
+            'accuracy' : accuracy,
             '|param|' : p_norm if not np.isnan(p_norm) and not np.isinf(p_norm) else 0.,
             '|g_param|' : g_norm if not np.isnan(g_norm) and not np.isinf(g_norm) else 0.,
         }
@@ -117,13 +118,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     y.contiguous().view(-1)
                 )
 
-        word_count = int(mini_batch['tgt'][1].sum())
-        loss = float(loss / word_count)
-        ppl = np.exp(loss)
+        mask = torch.logical_not(torch.eq(y, 0)).to(device=loss.device)
+        loss = mask * loss
+        accuracy = accuracy_function(y, y_hat)
 
         return {
-            'loss' : loss,
-            'ppl' : ppl,
+            'loss' : torch.sum(loss) / torch.sum(mask),
+            'accuracy' : accuracy,
         }
 
     @staticmethod
