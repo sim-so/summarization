@@ -29,6 +29,11 @@ def define_argparser():
         help='Text file name to summarize.'
     )
     p.add_argument(
+        '--output_fn',
+        required=True,
+        help='Output file name to save inferences.'
+    )
+    p.add_argument(
         '--gpu_id',
         type=int,
         default=-1,
@@ -111,7 +116,7 @@ def get_model(input_size, output_size, train_config):
 
 
 if __name__ == '__main__':
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+    # sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
     config = define_argparser()
 
     seed_everything()
@@ -146,6 +151,7 @@ if __name__ == '__main__':
         model.cuda(config.gpu_id)
 
     with torch.no_grad():
+        outputs = []
         # Get sentence from standard input.
         for lines in iter(loader):
             x = lines['src'].to('cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu')
@@ -157,4 +163,10 @@ if __name__ == '__main__':
 
             # to_text(indice, vocab.tgt_tokenizer)
             output = to_text(indice, vocab.tgt_tokenizer)
-            sys.stdout.write('\n'.join(output) + '\n')
+            # sys.stdout.write('\n'.join(output) + '\n')
+            outputs += output
+        
+    output_df = data[['uid', 'context', 'summary']]
+    output_df['pred'] = outputs
+
+    output_df.to_csv(config.output_fn, sep='\t', index=False)
