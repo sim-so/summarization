@@ -11,7 +11,7 @@ from ignite.engine import Events
 from ignite.metrics import RunningAverage
 from ignite.contrib.handlers.tqdm_logger import ProgressBar
 
-from utils.utils import get_grad_norm, get_parameter_norm, accuracy_function
+from utils.utils import get_grad_norm, get_parameter_norm
 
 
 VERBOSE_SILENT = 0
@@ -31,7 +31,6 @@ class MaximumLikelihoodEstimationEngine(Engine):
         super().__init__(func)
 
         self.best_loss = np.inf
-        self.best_accuracy = 0.
         self.scaler = GradScaler()
 
     @staticmethod
@@ -90,13 +89,12 @@ class MaximumLikelihoodEstimationEngine(Engine):
             else:
                 engine.optimizer.step()
 
-        mask = torch.logical_not(torch.eq(y, 0)).to(device=loss.device)
-        loss = mask * loss
-        accuracy = accuracy_function(y, y_hat)
+        loss = float(loss / word_count)
+        ppl = np.exp(loss)
 
         return {
-            'loss' : torch.sum(loss) / torch.sum(mask),
-            'accuracy' : accuracy,
+            'loss' : loss,
+            'ppl' : ppl,
             '|param|' : p_norm if not np.isnan(p_norm) and not np.isinf(p_norm) else 0.,
             '|g_param|' : g_norm if not np.isnan(g_norm) and not np.isinf(g_norm) else 0.,
         }
@@ -119,20 +117,20 @@ class MaximumLikelihoodEstimationEngine(Engine):
                     y.contiguous().view(-1)
                 )
 
-        mask = torch.logical_not(torch.eq(y, 0)).to(device=loss.device)
-        loss = mask * loss
-        accuracy = accuracy_function(y, y_hat)
+        word_count = int(mini_batch['tgt'][1].sum())
+        loss = float(loss / word_count)
+        ppl = np.exp(loss)
 
         return {
-            'loss' : torch.sum(loss) / torch.sum(mask),
-            'accuracy' : accuracy,
+            'loss' : loss,
+            'ppl' : ppl,
         }
 
     @staticmethod
     def attach(
         train_engine, validation_engine,
-        training_metric_names = ['loss', 'accuracy', '|param|', '|g_param|'],
-        validation_metric_names = ['loss', 'accuracy'],
+        training_metric_names = ['loss', 'ppl', '|param|', '|g_param|'],
+        validation_metric_names = ['loss', 'ppl'],
         verbose=VERBOSE_BATCH_WISE
     ):
         # Attaching would be repeated for serveral metrics.
@@ -156,14 +154,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 avg_p_norm = engine.state.metrics['|param|']
                 avg_g_norm = engine.state.metrics['|g_param|']
                 avg_loss = engine.state.metrics['loss']
-                avg_accuracy = engine.state.metrics['accuracy']
 
-                print('Epoch {} = |param|={:.2e} |g_param|={:.2e} loss={:.4e} accuracy={:.2f}'.format(
+                print('Epoch {} = |param|={:.2e} |g_param|={:.2e} loss={:.4e} ppl={:.2f}'.format(
                     engine.state.epoch,
                     avg_p_norm,
                     avg_g_norm,
                     avg_loss,
-                    avg_accuracy,
+                    np.exp(avg_loss),
                 ))
 
         for metric_name in validation_metric_names:
@@ -177,13 +174,12 @@ class MaximumLikelihoodEstimationEngine(Engine):
             @validation_engine.on(Events.EPOCH_COMPLETED)
             def print_valid_logs(engine):
                 avg_loss = engine.state.metrics['loss']
-                avg_accuracy = engine.state.metrics['accuracy']
 
-                print('Validation - loss={:.4e} accuracy={:.2f} best_loss={:.4e} best_accuracy={:.2f}'.format(
+                print('Validation - loss={:.4e} ppl={:.2f} best_loss={:.4e} best_ppl={:.2f}'.format(
                     avg_loss,
-                    avg_accuracy,
+                    np.exp(avg_loss),
                     engine.best_loss,
-                    engine.best_accuracy,
+                    np.exp(engine.best_loss),
                 ))
 
     @staticmethod
@@ -194,11 +190,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
     @staticmethod
     def check_best(engine):
         loss = float(engine.state.metrics['loss'])
-        accuracy = float(engine.state.metrics['accuracy'])
         if loss <= engine.best_loss:
             engine.best_loss = loss
-        if accuracy <= engine.best_accuracy:
-            engine.best_accuracy = accuracy
 
     @staticmethod
     def save_model(engine, train_engine, config, src_vocab, tgt_vocab):

@@ -41,13 +41,3 @@ def get_parameter_norm(parameters, norm_type=2):
         print(e)
 
     return total_norm
-
-
-def accuracy_function(y, pred):
-    accuracies = torch.eq(y, torch.argmax(pred, dim=-1))
-    mask = torch.logical_not(torch.eq(y, 0))
-    accuracies = torch.logical_and(mask, accuracies)
-    accuracies = torch.tensor(accuracies, dtype=torch.float32)
-    mask = torch.tensor(mask, dtype=torch.float32)
-
-    return torch.sum(accuracies)/torch.sum(mask)
