@@ -62,5 +62,6 @@ class Vocab():
             return self.src_tokenizer.txt2token(src)
 
 
-def get_dataloader(dataset, use_kfold=False, split_ratio=.2):
-    pass
+class CustomDataLoader():
+    def __init__(self, dataset):
+        pass

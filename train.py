@@ -195,17 +195,22 @@ def get_model(input_size, output_size, config):
     return model
 
 
-def get_crit(output_size, pad_index):
+def get_crit(output_size, pad_index, loss_function='NLLLoss'):
     # Default weight for loss equals to 1, but we don't need to get loss for PAD token.
     # Thus, set a weight for PAD to zero.
     loss_weight = torch.ones(output_size)
     loss_weight[pad_index] = 0.
     # Instead of using Cross-Entropy loss,
     # we can use Negative Log-Likelihood(NLL) loss with log-probbility.
-    crit = nn.NLLLoss(
-        weight=loss_weight,
-        reduction='sum'
-    )
+    if loss_function=='NLLLoss':
+        crit = nn.NLLLoss(
+            weight=loss_weight,
+            reduction='sum'
+        )
+    elif loss_function=='CrossEntropy':
+        crit = nn.CrossEntropyLoss()
+    else:
+        NotImplementedError("Set valid loss function.")
 
     return crit
 
