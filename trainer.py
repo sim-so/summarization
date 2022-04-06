@@ -31,6 +31,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         super().__init__(func)
 
         self.best_loss = np.inf
+        self.best_accuracy = 0.
         self.scaler = GradScaler()
 
     @staticmethod
@@ -130,8 +131,8 @@ class MaximumLikelihoodEstimationEngine(Engine):
     @staticmethod
     def attach(
         train_engine, validation_engine,
-        training_metric_names = ['loss', 'ppl', '|param|', '|g_param|'],
-        validation_metric_names = ['loss', 'ppl'],
+        training_metric_names = ['loss', 'accuracy', '|param|', '|g_param|'],
+        validation_metric_names = ['loss', 'accuracy'],
         verbose=VERBOSE_BATCH_WISE
     ):
         # Attaching would be repeated for serveral metrics.
@@ -155,13 +156,14 @@ class MaximumLikelihoodEstimationEngine(Engine):
                 avg_p_norm = engine.state.metrics['|param|']
                 avg_g_norm = engine.state.metrics['|g_param|']
                 avg_loss = engine.state.metrics['loss']
+                avg_accuracy = engine.state.metrics['accuracy']
 
-                print('Epoch {} = |param|={:.2e} |g_param|={:.2e} loss={:.4e} ppl={:.2f}'.format(
+                print('Epoch {} = |param|={:.2e} |g_param|={:.2e} loss={:.4e} accuracy={:.2f}'.format(
                     engine.state.epoch,
                     avg_p_norm,
                     avg_g_norm,
                     avg_loss,
-                    np.exp(avg_loss),
+                    avg_accuracy,
                 ))
 
         for metric_name in validation_metric_names:
@@ -175,12 +177,13 @@ class MaximumLikelihoodEstimationEngine(Engine):
             @validation_engine.on(Events.EPOCH_COMPLETED)
             def print_valid_logs(engine):
                 avg_loss = engine.state.metrics['loss']
+                avg_accuracy = engine.state.metrics['accuracy']
 
-                print('Validation - loss={:.4e} ppl={:.2f} best_loss={:.4e} best_ppl={:.2f}'.format(
+                print('Validation - loss={:.4e} accuracy={:.2f} best_loss={:.4e} best_accuracy={:.2f}'.format(
                     avg_loss,
-                    np.exp(avg_loss),
+                    avg_accuracy,
                     engine.best_loss,
-                    np.exp(engine.best_loss),
+                    engine.best_accuracy,
                 ))
 
     @staticmethod
@@ -191,8 +194,11 @@ class MaximumLikelihoodEstimationEngine(Engine):
     @staticmethod
     def check_best(engine):
         loss = float(engine.state.metrics['loss'])
+        accuracy = float(engine.state.metrics['accuracy'])
         if loss <= engine.best_loss:
             engine.best_loss = loss
+        if accuracy <= engine.best_accuracy:
+            engine.best_accuracy = accuracy
 
     @staticmethod
     def save_model(engine, train_engine, config, src_vocab, tgt_vocab):
